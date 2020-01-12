@@ -29,7 +29,7 @@
 #' @examples
 #'
 #' ######### from dataset
-#' DD <- generate_random_dataset(n = 5, 1000)
+#' DD <- generate_random_dataset(n = 4, 1000)
 #' indep <- staged_ev_tree(DD, fit = TRUE)
 #' full <- staged_ev_tree(DD, full = TRUE, fit = TRUE, lambda = 1)
 staged_ev_tree <- function(x, ...) {
@@ -456,7 +456,7 @@ is_fitted.sevt <- function(x) {
 #'
 #' ######### full model
 #'
-#' DD <- generate_xor_dataset(7, 100)
+#' DD <- generate_xor_dataset(4, 100)
 #' modfull <- full(DD, lambda = 1)
 #' @export
 full <- function(x, ...) {
@@ -479,7 +479,7 @@ indep.default <- function(x, ...) {
 #' @examples
 #'
 #' ######### independence model (data.frame)
-#' DD <- generate_xor_dataset(15, 100)
+#' DD <- generate_xor_dataset(4, 100)
 #' system.time(model1 <- staged_ev_tree(DD, fit = TRUE, lambda = 1))
 #' system.time(model2 <- indep(DD, lambda = 1))
 #' model1
@@ -500,6 +500,7 @@ indep.data.frame <- function(x, fit = TRUE, lambda = 0, ...) {
         model$prob[[v]][["1"]] / sum(model$prob[[v]][["1"]])
       attr(model$prob[[v]][["1"]], "n") <- n
       ix <- ctab > 0
+      class(model$prob[[v]][["1"]]) <- "numeric"
       model$ll <-
         model$ll + sum(ctab[ix] * log(model$prob[[v]][["1"]][ix]))
     }
@@ -773,7 +774,8 @@ subtree.sevt <- function(object, path) {
     object$prob[varout] <- NULL
     object$prob[[var[1]]] <- object$prob[[var[1]]][stage]
     for (i in 2:length(object$tree)) {
-      ###to do: clean unused probabilities
+      object$prob[[var[i]]] <- 
+        object$prob[[var[i]]][unique(object$stages[[var[i]]])]
     }
     
     #object$ll <- logLik(object)
@@ -1069,5 +1071,70 @@ df.sevt <- function(x) {
     (vapply(
       x$tree, FUN = length, FUN.VALUE = 1
     ) - 1))
+}
+
+#' Retrieve stage or path
+#' 
+#' Utility functions to obtain stages from paths and
+#' paths from stages.
+#'  
+#' @name getstagepath
+NULL
+
+
+#' @rdname getstagepath
+#' @param object a staged event tree object
+#' @param path a vector contating the path from root or
+#' a two dimensional array where each row is a path
+#' from root
+#' @return \code{get_stage} returns 
+#' the name of the stage for a given path (or paths).
+#' @examples 
+#' model <- fbhc.sevt(full(PhDArticles))
+#' get_stage(model, c("0", "male"))
+#' paths <- expand.grid(model$tree[2:1])[,2:1]
+#' get_stage(model, paths)
+#' 
+#' @export
+get_stage <- function(object, path){
+  if (is.null(object$stages)){
+    stop("object is not a staged tree")
+  }
+  if (is.null(dim(path))){
+    find_stage(object, path)
+  }else{
+    apply(path, MARGIN = 1, 
+          function(x) find_stage(object, x))
+  }
+}
+
+
+#' @rdname getstagepath
+#' 
+#' @param var string, one of the variable in 
+#'            the staged tree
+#' @param stage string or vector, the name
+#' of the stages for which the paths should be 
+#' returned
+#' @return \code{get_paths} return a
+#'         data.frame containing the paths 
+#'         corresponding to the given stage (or stages).
+#' @examples 
+#' get_path(model, "Kids", "11")
+#' get_path(model, "Gender", "2")
+#' get_path(model, "Kids", c("5", "6"))
+#' @export
+get_path <- function(object, var, stage) {
+  if (!var %in% names(object$tree))
+    stop(var, " is not a variable in the model")
+  
+  paths <- expand.grid(object$tree[(which(var == varnames.sevt(object)) - 1):1],
+                       stringsAsFactors = FALSE)
+  paths <- paths[object$stages[[var]] %in% stage,ncol(paths):1]
+  if (var %in% varnames.sevt(object)[2]){
+    paths <- data.frame(paths)
+    colnames(paths) <- varnames.sevt(object)[1]
+  }
+  return(paths)
 }
 
