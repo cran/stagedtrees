@@ -1,3 +1,13 @@
+# 1.0.2
+
+* fix bug in `summary`, stages were wrongly matched to probabilities
+* new function `barplot_stages` to draw barplots of the 
+  floret probabilities. Implemented relative tests.
+* new example in `plot.sevt`.
+* now `order` can be passed to `staged_ev_tree.bn.fit`
+* `join_zero` alias for `join_zero_counts` 
+* more tests 
+
 # 1.0.1
 
 * fix `indep`, probabilities should not be of class table 

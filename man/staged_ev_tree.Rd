@@ -24,7 +24,7 @@ staged_ev_tree(x, ...)
 
 \method{staged_ev_tree}{list}(x, full = FALSE, ...)
 
-\method{staged_ev_tree}{bn.fit}(x, ...)
+\method{staged_ev_tree}{bn.fit}(x, order = NULL, ...)
 
 \method{staged_ev_tree}{strt_ev_tree}(x, lambda = 0, ...)
 
@@ -85,8 +85,10 @@ modT <- staged_ev_tree(table(PhDArticles), fit = TRUE, full = TRUE, lambda = 1)
 plot(modT)
 
 ######### from list
-model <- staged_ev_tree(list(X = c("good", "bad"),
-                             Y = c("high", "low")))
+model <- staged_ev_tree(list(
+  X = c("good", "bad"),
+  Y = c("high", "low")
+))
 
 ######### full model
 
