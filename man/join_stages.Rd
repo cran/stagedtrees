@@ -7,27 +7,30 @@
 join_stages(object, v, s1, s2)
 }
 \arguments{
-\item{object}{staged event tree}
+\item{object}{an object of class \code{sevt}.}
 
-\item{v}{variable}
+\item{v}{variable.}
 
-\item{s1}{first stage}
+\item{s1}{first stage.}
 
-\item{s2}{second stage}
+\item{s2}{second stage.}
 }
 \value{
-the staged event tree where \code{s1} and \code{s2} are joined
+the staged event tree where \code{s1} and \code{s2} are joined.
 }
 \description{
 Join two stages in a staged event tree object, updating
 probabilities and log-likelihood accordingly.
 }
 \details{
-this function joins together two stages associated to the same variable.
+This function joins two stages associated to the
+same variable,
+updating probabilities and log-likelihood if
+the object was fitted.
 }
 \examples{
-model <- full(PhDArticles, fit = TRUE, lambda = 0)
-model <- fbhc.sevt(model)
+model <- full(PhDArticles, lambda = 0)
+model <- stages_fbhc(model)
 model$stages$Kids
 model <- join_stages(model, "Kids", "5", "6")
 model$stages$Kids

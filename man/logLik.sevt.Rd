@@ -7,9 +7,9 @@
 \method{logLik}{sevt}(object, ...)
 }
 \arguments{
-\item{object}{the staged event tree object}
+\item{object}{an fitted object of class \code{sevt}.}
 
-\item{...}{additional parameters}
+\item{...}{additional parameters (compatibility).}
 }
 \value{
 An object of class \code{\link{logLik}}.
@@ -19,6 +19,6 @@ Compute, or extract the log-likelihood of a staged event tree.
 }
 \examples{
 data("PhDArticles")
-mod <- staged_ev_tree(PhDArticles)
+mod <- indep(PhDArticles)
 logLik(mod)
 }

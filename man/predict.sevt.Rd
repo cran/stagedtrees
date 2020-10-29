@@ -7,12 +7,12 @@
 \method{predict}{sevt}(object, newdata = NULL, class = NULL, prob = FALSE, log = FALSE, ...)
 }
 \arguments{
-\item{object}{A staged event tree}
+\item{object}{an object of class \code{sevt} with fitted probabilities.}
 
-\item{newdata}{The newdata to perform predictions}
+\item{newdata}{the newdata to perform predictions}
 
-\item{class}{A string indicating the name of the variable to use as
-the class variable, otherwise the first name in \code{names(object$tree)}
+\item{class}{character, the name of the variable to use as
+the class variable, if NULL  the first element \code{names(object$tree)}
 will be used.}
 
 \item{prob}{logical, if \code{TRUE} the probabilities of class are
@@ -23,7 +23,7 @@ returned}
 \item{...}{additional parameters, see details}
 }
 \value{
-A vector of predictions or the corresponding probabilities
+A vector of predictions or the corresponding matrix of probabilities.
 }
 \description{
 Predict class values from a staged event tree model.
@@ -47,7 +47,7 @@ order <- c("C", "X1", "X2", "X3", "X4")
 train <- DD[1:500, order]
 test <- DD[501:600, order]
 model <- full(train)
-model <- bhc.sevt(model)
+model <- stages_bhc(model)
 pr <- predict(model, newdata = test, class = "C")
 table(pr, test$C)
 # class values:

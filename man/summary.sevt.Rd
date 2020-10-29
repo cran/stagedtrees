@@ -10,14 +10,14 @@
 \method{print}{summary.sevt}(x, max = 10, ...)
 }
 \arguments{
-\item{object}{a staged event tree object}
+\item{object}{an object of class \code{sevt}.}
 
-\item{...}{arguments for compatibility}
+\item{...}{arguments for compatibility.}
 
-\item{x}{an object of class \code{summary.sevt}}
+\item{x}{an object of class \code{summary.sevt}.}
 
 \item{max}{the maximum number of variables for which
-information is printed}
+information is printed.}
 }
 \value{
 An object of class \code{summary.sevt}
@@ -31,6 +31,6 @@ Summary method for class \code{sevt}.
 Print model information and summary of stages.
 }
 \examples{
-model <- naive.sevt(full(PhDArticles, fit = TRUE, lambda = 1))
+model <- stages_fbhc(full(PhDArticles, lambda = 1))
 summary(model)
 }

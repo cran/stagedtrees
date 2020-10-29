@@ -1,11 +1,11 @@
 #' New label
 #'
-#' give a safe-to-add label that is not in \code{labels}
-#' @param labels vector of labels
-#' @return a string label that is different from each \code{labels}
+#' give a safe-to-add label that is not in \code{labels}.
+#' @param labels vector of labels.
+#' @return a string label that is different from each \code{labels}.
 #' @keywords internal
 new_label <- function(labels) {
-  k <- 1
+  k <- 1 + length(labels)
   labels <- as.character(labels)
   while (TRUE) {
     if (!(as.character(k) %in% labels)) {
@@ -17,12 +17,12 @@ new_label <- function(labels) {
 
 #' Unique id from named list
 #'
-#' @param x a named list
-#' @return A named list with unique ids
+#' @param x a named list.
+#' @return A named list with unique ids.
 #' @keywords internal
 uni_idx <- function(x) {
   nn <- names(x)
-  x <- lapply(1:length(x), function(i) {
+  x <- lapply(seq_along(x), function(i) {
     paste0(nn[i], ":", x[[i]])
   })
   names(x) <- nn
@@ -32,9 +32,10 @@ uni_idx <- function(x) {
 
 #' return path index
 #'
-#' @param path a path from root in the tree
-#' @param tree a symmetric tree given as a list of levels
-#' @param complete logical, if \code{TRUE} the complete indexing is returned
+#' @param path a path from root in the tree.
+#' @param tree a symmetric tree given as a list of levels.
+#' @param complete logical, if \code{TRUE} the complete indexing 
+#'                 is returned.
 #'
 #' @details Compute the integer index of the node associated with the
 #' given path in a symmetric tree defined by \code{tree}.
@@ -63,12 +64,12 @@ tree_idx <- function(path, tree, complete = FALSE) {
 
 
 
-#' Find the stage  the path
+#' Find the stage of the path
 #'
-#' no checking is done
-#' @param object a staged event tree object
-#' @param path vector of the path
-#' @return the stage name corresponding of the path
+#' no checking is done.
+#' @param object a staged event tree object.
+#' @param path vector of the path.
+#' @return the stage name corresponding of the path.
 #' @keywords internal
 find_stage <- function(object, path) {
   k <- length(path)
@@ -84,43 +85,48 @@ find_stage <- function(object, path) {
 #' Compute the matrix of distances between probabilities,
 #' e.g the transition probabilities for a given variable in a
 #' staged event tree.
-#' @param x list of conditional probabilities for each stage
-#' @param distance the distance function e.g. \code{\link{kl}}
-#' @param ... additional parameters to be passed to the distance function
-#' @return The matrix with the distances between stages
+#' @param x list of conditional probabilities for each stage.
+#' @param distance the distance function e.g. \code{\link{probdist.kl}}.
+#' @return The matrix with the distances between stages.
 #' @keywords internal
-distance_mat_stages <- function(x, distance = kl, ...) {
+distance_mat_stages <- function(x, distance = probdist.kl) {
   d <- length(x)
   M <- matrix(nrow = d, ncol = d, 0)
   for (i in 1:d) {
     for (j in 1:i) {
-      M[i, j] <- distance(x[[i]], x[[j]], ...)
+      M[i, j] <- distance(x[[i]], x[[j]])
     }
   }
-  return(M + t(M))
+  M <- M[lower.tri(M)]
+  class(M) <- "dist"
+  attr(M, "Size") <- length(x)
+  attr(M, "Labels") <- names(x)
+  return(M)
 }
 
-#' perform a simple clustering in 2 groups
+#' Perform a simple clustering in 2 groups
 #'
 #' clustering in 2 groups is performed starting
 #' from a distance (positive, symmetric) matrix
-#' @param M matrix of distance
-#' @return a list with component \code{I} and \code{J} (the two group of clusters)
+#' @param M matrix of distance.
+#' @return a list with component \code{I} and \code{J} 
+#'          (the two clusters).
 #' @keywords internal
 simple_clustering <- function(M) {
+  nm <- colnames(M)
   ## first we find the two indxs that return the maximum distance.
   idx <- which.max(M)
   i <- ceiling(idx / dim(M)[1])
   j <- idx - (i - 1) * dim(M)[1]
   todo <- (1:(dim(M)[1]))[-c(i, j)] ## index to assign to cluster
-  I <- c(i) # initialize clusters
-  J <- c(j) # initialize clusters
+  I <- c(nm[i]) # initialize clusters
+  J <- c(nm[j]) # initialize clusters
   for (k in todo) {
     ## assign other indxs to the closest cluster
     if (M[k, i] < M[k, j]) {
-      I <- c(I, k)
+      I <- c(I, nm[k])
     } else {
-      J <- c(J, k)
+      J <- c(J, nm[k])
     }
   }
   return(list(
@@ -133,14 +139,11 @@ simple_clustering <- function(M) {
 
 #' Distances between probabilities
 #'
-#' @param x vector of probabilities
-#' @param y vector of probabilities
-#' @param p exponent in the \eqn{L^p} norm
-#' @param alpha the order of the Renyi divergence
-#' @param ... additional parameters for compatibility
+#' @param x vector of probabilities.
+#' @param y vector of probabilities.
 #' @details Functions to compute distances between probabilities:
-#' * \code{lp}: the \eqn{L^p} distance, \eqn{||x - y||_p^p}
-#' * \code{ry}: the symmetric Renyi divergence of order \eqn{\alpha}
+#' * \code{lp}: the \eqn{L^p} distance, \eqn{||x - y||_p^p} for \eqn{p = 1,2}
+#' * \code{ry}: the symmetric Renyi divergence of order \eqn{\alpha = 2} 
 #' * \code{kl}: the symmetrized Kullback-Leibler divergence
 #' * \code{tv}: the total variation or \eqn{L^1} norm
 #' * \code{hl}: the (squared) Hellinger distance
@@ -148,66 +151,77 @@ simple_clustering <- function(M) {
 #' * \code{cd}: the Chan-Darwiche distance
 #' @return The distance between \code{p} and \code{q}
 #' @name probdist
+#' @keywords internal
 NULL
 
 
 
 #' @rdname probdist
-#' @export
-lp <- function(x, y, p = 2, ...) {
-  (sum(abs(x - y)^p))^(1 / p)
+#' @keywords internal
+probdist.l2 <- function(x, y) {
+  (sum(abs(x - y)^2))^(1 / 2)
 }
 
 #' @rdname probdist
-#' @export
-ry <- function(x, y, alpha = 2, ...) {
-  if (alpha == 1) {
-    return(kl(x, y))
-  }
-  if (alpha == Inf) {
-    return(log(max(x / y)) + log(max(y / x)))
-  }
+#' @keywords internal
+probdist.l1 <- function(x, y) {
+  sum(abs(x - y))
+}
+
+#' @rdname probdist
+#' @keywords internal
+probdist.ry <- function(x, y) {
+  rmix <- (x == 0) & (y == 0)
+  x <- x[!rmix]
+  y <- y[!rmix]
+  alpha <- 2
   (log(sum(x^(alpha) / y^(alpha - 1))) +
     log(sum(y^(alpha) / x^(alpha - 1)))) / (alpha - 1)
 }
 
 #' @rdname probdist
-#' @export
-kl <- function(x, y, ...) {
+#' @keywords internal
+probdist.kl <- function(x, y) {
+  rmix <- (x == 0) & (y == 0)
+  x <- x[!rmix]
+  y <- y[!rmix]
   return(sum(x * (log(x) - log(y))) +
     sum(y * (log(y) - log(x))))
 }
 
 #' @rdname probdist
-#' @export
-tv <- function(x, y, ...) {
+#' @keywords internal
+probdist.tv <- function(x, y) {
   sum(abs(x - y))
 }
 
 #' @rdname probdist
-#' @export
-hl <- function(x, y, ...) {
+#' @keywords internal
+probdist.hl <- function(x, y) {
   sum((sqrt(x) - sqrt(y))^2)
 }
 
 #' @rdname probdist
-#' @export
-bh <- function(x, y, ...) {
+#' @keywords internal
+probdist.bh <- function(x, y) {
   -log(sum(sqrt(x * y)))
 }
 
 #' @rdname probdist
-#' @export
-cd <- function(x, y, ...) {
+#' @keywords internal
+probdist.cd <- function(x, y) {
+  rmix <- (x == 0) & (y == 0)
+  x <- x[!rmix]
+  y <- y[!rmix]
   log(max(x / y)) - log(min(x / y))
 }
 
 
 #' noisy xor function
 #'
-#' @param x a vector of +1 and -1
-#' @param eps the uniform noise amount
-#' @return the computed noisy xor
+#' @param x a vector of +1 and -1.
+#' @param eps the uniform noise amount.
+#' @return the computed noisy xor.
 #' @keywords internal
 #' @importFrom stats runif
 noisy_xor <- function(x, eps = 0) {
@@ -216,13 +230,13 @@ noisy_xor <- function(x, eps = 0) {
   )))
 }
 
-#' generate a xor dataset
+#' Generate a xor dataset
 #'
-#' @param n number of variables
-#' @param N number of observations
-#' @param eps error
-#' @return The xor dataset with \code{n} + 1 variables, where the last one is
-#' the class variable \code{C} computed as xor logical operator.
+#' @param n number of variables.
+#' @param N number of observations.
+#' @param eps error.
+#' @return The xor dataset with \code{n} + 1 variables, where the first one is
+#' the class variable \code{C} computed as a noisy xor.
 #'
 #' @export
 #' @importFrom stats runif
@@ -235,7 +249,6 @@ generate_xor_dataset <- function(n = 2,
   for (i in 1:n) {
     DD[[paste("X", i, sep = "")]] <- sample(
       c(-1, +1),
-      # prob=rep(1,2),
       prob = runif(2, min = 0, max = 1),
       size = N,
       replace = TRUE
@@ -252,22 +265,22 @@ generate_xor_dataset <- function(n = 2,
   for (i in 1:(n + 1)) {
     DD[[i]] <- factor(DD[[i]], levels = c(-1, 1))
   }
-  return(DD)
+  return(DD[,c(n+1,1:n)])
 }
 
 
-#' generate a random binary dataset for classification
+#' Generate a random binary dataset for classification
 #'
-#' Randomly generate a simple classification problem
-#' @param n number of variables
-#' @param N number of observations
-#' @param eps noise
-#' @param gamma numeric
-#' @param alpha numeric vector of length \code{n}
+#' Randomly generate a simple classification problem.
+#' @param n number of variables.
+#' @param N number of observations.
+#' @param eps noise.
+#' @param gamma numeric.
+#' @param alpha numeric vector of length \code{n}.
 #'
 #' @return A data.frame with \code{n} independent random variables and
 #'  one class variable \code{C} computed as
-#'  \code{sign(sum(x * alpha) + runif(1, -eps, eps) + gamma)}
+#'  \code{sign(sum(x * alpha) + runif(1, -eps, eps) + gamma)}.
 #' @export
 #' @importFrom stats runif
 #' @examples
@@ -304,15 +317,15 @@ generate_linear_dataset <-
     for (i in 1:(n + 1)) {
       DD[[i]] <- factor(DD[[i]], levels = c(-1, 1))
     }
-    return(DD)
+    return(DD[,c(n+1,1:n)])
   }
 
-#' generate a random binary dataset
+#' Generate a random binary dataset
 #'
-#' Randomly generate a data.frame of independent binary variables
-#' @param n number of variables
-#' @param N number of observations
-#' @return A data.frame with \code{n} independent random variables
+#' Randomly generate a data.frame of independent binary variables.
+#' @param n number of variables.
+#' @param N number of observations.
+#' @return A data.frame with \code{n} independent random variables.
 #' @export
 #' @importFrom stats runif
 #' @examples
@@ -337,10 +350,10 @@ generate_random_dataset <-
 
 #' Find maximum value
 #'
-#' @param x numerical, the log-probabilities
-#' @param character the levels to be returned same length as x
+#' @param x numerical, the log-probabilities.
+#' @param character the levels to be returned same length as x.
 #'
-#' @return factor
+#' @return factor.
 #' @keywords internal
 which_class <- function(x, levels) {
   y <- seq_along(x)[x == max(x)]

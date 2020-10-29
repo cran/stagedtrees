@@ -4,17 +4,15 @@
 \alias{distance_mat_stages}
 \title{Compute the distance matrix}
 \usage{
-distance_mat_stages(x, distance = kl, ...)
+distance_mat_stages(x, distance = probdist.kl)
 }
 \arguments{
-\item{x}{list of conditional probabilities for each stage}
+\item{x}{list of conditional probabilities for each stage.}
 
-\item{distance}{the distance function e.g. \code{\link{kl}}}
-
-\item{...}{additional parameters to be passed to the distance function}
+\item{distance}{the distance function e.g. \code{\link{probdist.kl}}.}
 }
 \value{
-The matrix with the distances between stages
+The matrix with the distances between stages.
 }
 \description{
 Compute the matrix of distances between probabilities,

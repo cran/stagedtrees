@@ -4,16 +4,16 @@
 \alias{set_stage}
 \title{Set stage to path}
 \usage{
-set_stage(sevt, path, stage)
+set_stage(object, path, stage)
 }
 \arguments{
-\item{sevt}{Staged event tree}
+\item{object}{an object of class \code{sevt}.}
 
-\item{path}{Vector of the path}
+\item{path}{Vector of the path.}
 
-\item{stage}{stage to be assigned}
+\item{stage}{stage to be assigned.}
 }
 \description{
-Set the given stage to the path for the stage event tree
+Set stage to path
 }
 \keyword{internal}

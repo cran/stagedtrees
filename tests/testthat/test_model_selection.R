@@ -3,27 +3,20 @@ context("model selection")
 data("PhDArticles")
 f <- full(PhDArticles[, 1:4])
 ind <- indep(PhDArticles[, 1:4])
+fl <- full(PhDArticles[, 1:4], lambda = 1)
 
-
-test_that("hc.sevt from full", {
-  expect_message(mod <- hc.sevt(f, max_iter = 3, trace = 2))
+test_that("hc from full", {
+  expect_silent(mod <- stages_hc(f, max_iter = 3, scope = "Kids"))
+  expect_message(mod <- stages_hc(f, max_iter = 3, trace = 2))
   ll1 <- logLik(mod)
   mod$ll <- NULL
   ll2 <- logLik(mod)
   expect_equal(ll1, ll2)
 })
 
-test_that("hc.sevt from indep", {
-  expect_message(mod <- hc.sevt(ind, max_iter = 3, trace = 2))
-  ll1 <- logLik(mod)
-  mod$ll <- NULL
-  ll2 <- logLik(mod)
-  expect_equal(ll1, ll2)
-})
-
-
-test_that("bhc.sevt", {
-  expect_message(mod <- bhc.sevt(f, max_iter = 5, trace = 2))
+test_that("hc from indep", {
+  expect_silent(mod <- stages_hc(ind, max_iter = 3, scope = "Kids"))
+  expect_message(mod <- stages_hc(ind, max_iter = 3, trace = 2))
   ll1 <- logLik(mod)
   mod$ll <- NULL
   ll2 <- logLik(mod)
@@ -31,8 +24,9 @@ test_that("bhc.sevt", {
 })
 
 
-test_that("fbhc.sevt", {
-  expect_message(mod <- fbhc.sevt(f, max_iter = 5, trace = 2))
+test_that("bhc", {
+  expect_silent(mod <- stages_bhc(f, max_iter = 5, scope = "Kids"))
+  expect_message(mod <- stages_bhc(f, max_iter = 5, trace = 2))
   ll1 <- logLik(mod)
   mod$ll <- NULL
   ll2 <- logLik(mod)
@@ -40,8 +34,9 @@ test_that("fbhc.sevt", {
 })
 
 
-test_that("bhcr.sevt", {
-  expect_message(mod <- bhcr.sevt(f, max_iter = 10, trace = 2))
+test_that("fbhc", {
+  expect_silent(mod <- stages_fbhc(f, max_iter = 5, scope = "Kids"))
+  expect_message(mod <- stages_fbhc(f, max_iter = 5, trace = 2))
   ll1 <- logLik(mod)
   mod$ll <- NULL
   ll2 <- logLik(mod)
@@ -49,8 +44,8 @@ test_that("bhcr.sevt", {
 })
 
 
-test_that("bj.sevt", {
-  expect_message(mod <- bj.sevt(f, max_iter = 5, trace = 2))
+test_that("bhcr", {
+  expect_message(mod <- stages_bhcr(f, max_iter = 10, trace = 2))
   ll1 <- logLik(mod)
   mod$ll <- NULL
   ll2 <- logLik(mod)
@@ -58,8 +53,9 @@ test_that("bj.sevt", {
 })
 
 
-test_that("join_zero_counts", {
-  expect_message(mod <- join_zero_counts(f, trace = 2, name = "zeros"))
+test_that("bj", {
+  expect_silent(mod <- stages_bj(f, scope = "Kids"))
+  expect_message(mod <- stages_bj(f, trace = 2))
   ll1 <- logLik(mod)
   mod$ll <- NULL
   ll2 <- logLik(mod)
@@ -67,8 +63,38 @@ test_that("join_zero_counts", {
 })
 
 
-test_that("naive.sevt", {
-  expect_silent(mod <- naive.sevt(full(PhDArticles, lambda = 1)))
+test_that("join.unobserved", {
+  expect_message(mod <- join_unobserved(f, trace = 2, name = "zeros"))
+  ll1 <- logLik(mod)
+  mod$ll <- NULL
+  ll2 <- logLik(mod)
+  expect_equal(ll1, ll2)
+})
+
+
+
+
+
+test_that("stages_hclust", {
+  expect_silent(mod <- stages_hclust(join_unobserved(fl, name = "NA"), 
+                                   k = c(2,3), ignore = "NA"))
+  expect_silent(mod <- stages_hclust(join_unobserved(fl, name = "NA"), k = c(2,3), 
+                                   scope = "Kids"))
+  expect_silent(mod <- stages_hclust(fl))  
+  ll1 <- logLik(mod)
+  mod$ll <- NULL
+  ll2 <- logLik(mod)
+  expect_equal(ll1, ll2)
+})
+
+test_that("stages_kmeans", {
+  expect_silent(mod <- stages_kmeans(join_unobserved(fl, name = "NA"), 
+                                   k = c(2,3), ignore = "NA"))
+  expect_silent(mod <- stages_kmeans(join_unobserved(fl, name = "NA"), k = c(2,3), 
+                                   scope = "Kids"))
+  expect_silent(mod <- stages_kmeans(fl, transform = function(x) x^2))
+  expect_silent(mod <- stages_kmeans(fl, transform = NULL))
+  expect_silent(mod <- stages_kmeans(fl)) 
   ll1 <- logLik(mod)
   mod$ll <- NULL
   ll2 <- logLik(mod)

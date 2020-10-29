@@ -1,10 +1,10 @@
 #' Predict method for staged event tree
 #'
 #' Predict class values from a staged event tree model.
-#' @param object A staged event tree
-#' @param newdata The newdata to perform predictions
-#' @param class A string indicating the name of the variable to use as
-#' the class variable, otherwise the first name in \code{names(object$tree)}
+#' @param object an object of class \code{sevt} with fitted probabilities.
+#' @param newdata the newdata to perform predictions
+#' @param class character, the name of the variable to use as
+#' the class variable, if NULL  the first element \code{names(object$tree)}
 #' will be used.
 #' @param prob logical, if \code{TRUE} the probabilities of class are
 #'                      returned
@@ -14,14 +14,14 @@
 #'  given all the other variables in the model. Ties are broken at random and
 #'  if, for a given vector of predictor variables, all conditional probabilities
 #'  are 0, NA is returned.
-#' @return A vector of predictions or the corresponding probabilities
+#' @return A vector of predictions or the corresponding matrix of probabilities.
 #' @examples
 #' DD <- generate_xor_dataset(n = 4, 600)
 #' order <- c("C", "X1", "X2", "X3", "X4")
 #' train <- DD[1:500, order]
 #' test <- DD[501:600, order]
 #' model <- full(train)
-#' model <- bhc.sevt(model)
+#' model <- stages_bhc(model)
 #' pr <- predict(model, newdata = test, class = "C")
 #' table(pr, test$C)
 #' # class values:
@@ -45,19 +45,19 @@ predict.sevt <-
            prob = FALSE,
            log = FALSE,
            ...) {
-    stopifnot(is(object, "sevt"))
-    if (!is_fitted.sevt(object)) {
-      stop("Provide a fitted object")
+    check_sevt_prob(object)
+    vars <- names(object$tree)
+    if (!has_prob(object)) {
+      stop("Provide a staged event tree with probabilities")
     }
     if (is.null(newdata)) {
-      newdata <- object$data
+      newdata <- object$ctables[[vars[length(vars)]]]
       if (is.null(newdata)) {
         stop("Nothing to predict, newdata argument is missing and data is not
              attached to object")
       }
       newdata <- as.data.frame(newdata)
     } ## we are now sure we have newdata as a data.frame
-    vars <- names(object$tree)
     # we search now for wich variable we need to make predicitons
     if (is.null(class)) {
       if (!is.null(object$class)) {
@@ -85,7 +85,7 @@ predict.sevt <-
       for (cv in object$tree[[class]]) {
         x[class_idx] <- cv
         res[cv] <-
-          path_probability.sevt(object, x, log = TRUE)
+          path_probability(object, x, log = TRUE)
       }
       res[is.nan(res)] <- -Inf
       return(res - log(sum(exp(res)))) ## normalize, that is conditional prob

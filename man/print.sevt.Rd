@@ -7,24 +7,24 @@
 \method{print}{sevt}(x, ...)
 }
 \arguments{
-\item{x}{the staged event tree object}
+\item{x}{an object of class \code{sevt}.}
 
-\item{...}{additional parameters (compatibility)}
+\item{...}{additional parameters (compatibility).}
 }
 \value{
-An invisible copy of \code{x}
+An invisible copy of \code{x}.
 }
 \description{
 Print a staged event tree
 }
 \details{
-The order of the variables in the stratified tree
+The order of the variables in the staged tree
 is printed (from root). In addition the number of levels of each
 variable is shown in square brackets.
 If available the log-likelihood of the model is printed.
 }
 \examples{
 DD <- generate_xor_dataset(5, 100)
-model <- staged_ev_tree(DD, fit = TRUE, lambda = 1)
+model <- full(DD, lambda  = 1)
 print(model)
 }

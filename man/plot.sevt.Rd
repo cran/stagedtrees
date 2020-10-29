@@ -6,67 +6,114 @@
 \usage{
 \method{plot}{sevt}(
   x,
-  limit = 10,
+  y = 10,
+  limit = y,
   xlim = c(0, 1),
   ylim = c(0, 1),
+  main = NULL,
+  sub = NULL,
   asp = 1,
-  cex.label.nodes = 1,
-  cex.label.edges = 1,
-  cex.nodes = 2,
+  cex_label_nodes = 0,
+  cex_label_edges = 1,
+  cex_nodes = 2,
+  cex_tree_y = 0.9,
   col = NULL,
+  col_edges = "black",
+  var_names = TRUE,
+  ignore = x$name_unobserved,
+  pch_nodes = 16,
+  lwd_nodes = 1,
+  lwd_edges = 1,
   ...
 )
 }
 \arguments{
-\item{x}{staged event tree object}
+\item{x}{an object of class \code{sevt}.}
 
-\item{limit}{maximum number of variables plotted}
+\item{y}{alias for \code{limit} for compatibility with \code{plot}.}
 
-\item{xlim}{graphical parameter}
+\item{limit}{maximum number of variables plotted.}
 
-\item{ylim}{graphical parameter}
+\item{xlim}{the x limits (x1, x2) of the plot.}
 
-\item{asp}{graphical parameter}
+\item{ylim}{the y limits of the plot.}
 
-\item{cex.label.nodes}{graphical parameter}
+\item{main}{an overall title for the plot.}
 
-\item{cex.label.edges}{graphical parameter}
+\item{sub}{a sub title for the plot.}
 
-\item{cex.nodes}{graphical parameter}
+\item{asp}{the y/x aspect ratio.}
 
-\item{col}{color mapping for the stages, a named list with
-names equal to the variables names in the model and
-vectors named with stages names as components; otherwise
-if \code{col == "stages"} the stage names will be used as
-colors; otherwise if \code{col} is a function it will take
-as input a vector of stages and output the corresponding colors.}
+\item{cex_label_nodes}{the magnification to be used for
+the node labels.
+If set to \code{0} (as default)
+node labels are not showed.}
+
+\item{cex_label_edges}{the magnification
+for the edge labels.
+If set to \code{0} edge labels are not displayed.}
+
+\item{cex_nodes}{the magnification  for
+the nodes of the tree.}
+
+\item{cex_tree_y}{the magnification for the
+tree in the vertical direction.
+Default is \code{0.9} to leave some space
+for the variable names.}
+
+\item{col}{color mapping for stages, one of the following:
+NULL (color will be assigned based on the current palette);
+a named (variables) list of named (stages)
+vectors of colors;
+the character \code{"stages"}, in which case the stage names will be used as
+colors;
+a function that takes
+as input a vector of stages and output the corresponding colors.
+Check the provided examples.}
+
+\item{col_edges}{color for the edges.}
+
+\item{var_names}{logical, if variable names should be added to the plot,
+otherwise variable names can be added manually using
+\code{\link{text.sevt}}.}
+
+\item{ignore}{vector of stages which will be ignored and left untouched,
+by default the name of the unobserved stages stored in
+\code{x$name_unobserved}.}
+
+\item{pch_nodes}{either an integer specifying a symbol or a single character
+to be used as the default in plotting nodes shapes see
+\code{\link{points}}.}
+
+\item{lwd_nodes}{the line width for edges, a positive number, defaulting to 1.}
+
+\item{lwd_edges}{the line width for nodes, a positive number, defaulting to 1.}
 
 \item{...}{additional graphical parameters to be passed to
 \code{points}, \code{lines}, \code{title},
 \code{text} and \code{plot.window}.}
 }
 \description{
-\code{plot.sevt} is the plot method for staged event tree
-objects. It allows easy plotting for staged event tree with some
-options, mainly different ways to specify colors for the stages (see
-examples).
+Plot method for staged event tree
+objects. It allows easy plotting of staged event trees with some
+options (see Examples).
 }
 \examples{
 
 data("PhDArticles")
-mod <- bj.sevt(full(PhDArticles))
+mod <- stages_bj(full(PhDArticles, join_unobserved = TRUE))
 
 ### simple plotting
 plot(mod)
 
-### removing lables from nodes and edges and fill nodes
-plot(mod, cex.label.nodes = 0, cex.label.edges = 0, pch = 16)
+### labels in nodes 
+plot(mod, cex_label_nodes = 1, cex_nodes = 0)
 
 ### reduce nodes size
-plot(mod, cex.nodes = 1)
+plot(mod, cex_nodes = 0.5)
 
 ### change line width and nodes style
-plot(mod, lwd = 3, pch = 5)
+plot(mod, lwd_edges = 3, pch_nodes = 5)
 
 ### changing palette
 plot(mod, col = function(s) heat.colors(length(s)))
@@ -74,12 +121,26 @@ plot(mod, col = function(s) heat.colors(length(s)))
 ### or changing global palette
 palette(hcl.colors(10, "Harmonic"))
 plot(mod)
+palette("default") ##
+
+### forcing plotting of unobserved stages
+plot(mod, ignore = NULL)
+
+### use function to specify colors 
+plot(mod, col = function(stages){
+    hcl.colors(n = length(stages))
+})
 
 ### manually give stages colors
-simple <- naive.sevt(full(PhDArticles, lambda = 1))
-#### simple has 2 stages per variable "1" and "2"
-col <- lapply(simple$stages, function(s) {
-  c("1" = "purple", "2" = "cyan")
-})
-plot(simple, col = col)
+### as an example we will assign colors only to the stages of two variables
+### Gender (one stage named "1") and Mentor (six stages)
+col <- list(Gender = c("1" = "blue"), 
+            Mentor = c("UNOBSERVED" = "grey",
+                        "2" = "red", 
+                        "3" = "purple",
+                        "10" = "pink",
+                        "18" = "green",
+                        "22" = "brown"))
+### by setting ignore = NULL we will plot also the UNOBSERVED stage for Mentor
+plot(mod, col = col, ignore = NULL)
 }

@@ -10,6 +10,27 @@ Status](https://travis-ci.com/gherardovarando/stagedtrees.svg?branch=master)](ht
 status](https://codecov.io/gh/gherardovarando/stagedtrees/branch/master/graph/badge.svg)](https://codecov.io/github/gherardovarando/stagedtrees?branch=master)
 [![](https://cranlogs.r-pkg.org/badges/stagedtrees)](https://cran.r-project.org/package=stagedtrees)
 
+##### (almost) v2.0.0
+
+The current version of `stagedtrees` available on github is a major
+update over the previous version (1.0.2). The update will almost surely
+break any code written with v1.0.2. Functions naming and functions
+parameters have been updated to simplify user experience. Check the
+[complete changelog](NEWS.md) for details.
+
+##### Preprint
+
+F Carli, M Leonelli, E Riccomagno, G Varando, The R Package stagedtrees
+for Structural Learning of Stratified Staged Trees, 2020
+[arXiv:2004.06459](https://arxiv.org/abs/2004.06459)
+
+    @misc{2004.06459,
+    Author = {Federico Carli and Manuele Leonelli and Eva Riccomagno and Gherardo Varando},
+    Title = {The R Package stagedtrees for Structural Learning of Stratified Staged Trees},
+    Year = {2020},
+    Eprint = {arXiv:2004.06459},
+    }
+
 ### Overview
 
 `stagedtrees` is a package that implements staged event trees, a
@@ -18,7 +39,7 @@ probability model for discrete random variables.
 ### Installation
 
 ``` r
-#stable version from CRAN
+#stable version from CRAN 
 install.packages("stagedtrees")
 
 #development version from github
@@ -38,72 +59,81 @@ predictions, visualize and compare different models.
 
 #### Creating the model
 
-A staged event tree object (`sevt` class) can be created with the
-function `staged_ev_tree`, or with the functions `indep` and `full`. In
-general we create a staged event tree from data in a `data.frame` or
-`table` object.
+A staged event tree object (`sevt` class) can be initialized as the full
+(saturated) or as the fully independent model with, respectively, the
+functions `indep` and `full`. It is possible to build a staged event
+tree from data stored in a `data.frame` or a `table` object.
 
 ``` r
 # Load the PhDArticles data
 data("PhDArticles")
 
-# Create the independence model 
+# Independence model 
 mod_indep <- indep(PhDArticles, lambda = 1)
 mod_indep
 #> Staged event tree (fitted) 
 #> Articles[3] -> Gender[2] -> Kids[2] -> Married[2] -> Mentor[3] -> Prestige[2]  
 #> 'log Lik.' -4407.498 (df=8)
 
-#Create the full (saturated) model
+# Full (saturated) model
 mod_full <- full(PhDArticles, lambda = 1) 
 mod_full
 #> Staged event tree (fitted) 
 #> Articles[3] -> Gender[2] -> Kids[2] -> Married[2] -> Mentor[3] -> Prestige[2]  
 #> 'log Lik.' -4066.97 (df=143)
+
+# Full model with not-observed situations joined in NA stages
+mod_full0 <- full(PhDArticles, join_unobserved = TRUE, lambda = 1)
+mod_full0
+#> Staged event tree (fitted) 
+#> Articles[3] -> Gender[2] -> Kids[2] -> Married[2] -> Mentor[3] -> Prestige[2]  
+#> 'log Lik.' -4066.97 (df=116)
 ```
 
 #### Model selection
 
-Starting from the independence model of the full model it is  
-possible to perform automatic model selection.
+`stagedtrees` implements methods to perform automatic model selection.
+All methods can be initialized from an arbitrary staged event tree
+object.
 
 ##### Score methods
 
-This methods perform optimization of the model for a given score using
-different types of heuristic methods.
+This methods perform optimization for a given score using different
+heuristics.
 
-  - **Hill-Climbing** `hc.sevt(object, score, max_iter, trace)`
+  - **Hill-Climbing** `stages_hc(object, score, max_iter, scope, ignore,
+    trace)`
 
 <!-- end list -->
 
 ``` r
-mod1 <- hc.sevt(mod_indep)
+mod1 <- stages_hc(mod_indep)
 mod1
 #> Staged event tree (fitted) 
 #> Articles[3] -> Gender[2] -> Kids[2] -> Married[2] -> Mentor[3] -> Prestige[2]  
 #> 'log Lik.' -4118.434 (df=14)
 ```
 
-  - **Backward Hill-Climbing** `bhc.sevt(object, score, max_iter,
-    trace)`
+  - **Backward Hill-Climbing** `stages_bhc(object, score, max_iter,
+    scope, ignore, trace)`
 
 <!-- end list -->
 
 ``` r
-mod2 <- bhc.sevt(mod_full)
+mod2 <- stages_bhc(mod_full)
 mod2
 #> Staged event tree (fitted) 
 #> Articles[3] -> Gender[2] -> Kids[2] -> Married[2] -> Mentor[3] -> Prestige[2]  
 #> 'log Lik.' -4086.254 (df=19)
 ```
 
-  - **Backward Fast Hill-Climbing** `fbhc.sevt(object, score, max_iter,
-    trace)`
+  - **Backward Fast Hill-Climbing** `stages_fbhc(object, score,
+    max_iter, scope, ignore, trace)`
 
 <!-- end list -->
 
 ``` r
-mod3 <- fbhc.sevt(mod_full, score = function(x) -BIC(x))
+mod3 <- stages_fbhc(mod_full, score = function(x) -BIC(x))
 mod3
 #> Staged event tree (fitted) 
 #> Articles[3] -> Gender[2] -> Kids[2] -> Married[2] -> Mentor[3] -> Prestige[2]  
@@ -112,28 +142,50 @@ mod3
 
 ##### Distance methods
 
-  - **Backward Joining** `bj.sevt(full, distance, thr, trace, ...)`
+  - **Backward Joining** `stages_bj(object, distance, thr, scope,
+    ignore, trace)`
 
 <!-- end list -->
 
 ``` r
-mod4 <- bj.sevt(mod_full)
+mod4 <- stages_bj(mod_full)
 mod4
 #> Staged event tree (fitted) 
 #> Articles[3] -> Gender[2] -> Kids[2] -> Married[2] -> Mentor[3] -> Prestige[2]  
 #> 'log Lik.' -4090.79 (df=22)
 ```
 
-  - **Naive model** `naive.sevt(full, distance, k)`
+##### Clustering methods
+
+  - **Hierarchical Clustering** `stages_hclust(object, distance, k,
+    method, ignore, limit, scope)`
 
 <!-- end list -->
 
 ``` r
-mod5 <- naive.sevt(mod_full)
+mod5 <- stages_hclust(mod_full0,
+                    k = 2, 
+                    distance = "totvar",
+                   method = "mcquitty")
 mod5
 #> Staged event tree (fitted) 
 #> Articles[3] -> Gender[2] -> Kids[2] -> Married[2] -> Mentor[3] -> Prestige[2]  
-#> 'log Lik.' -4118.437 (df=14)
+#> 'log Lik.' -4122.274 (df=17)
+```
+
+  - **K-Means Clustering** `stages_kmeans(object, k, algorithm, ignore,
+    limit, scope, nstart)`
+
+<!-- end list -->
+
+``` r
+mod6 <- stages_kmeans(mod_full0,
+                    k = 2, 
+                   algorithm = "Hartigan-Wong")
+mod6
+#> Staged event tree (fitted) 
+#> Articles[3] -> Gender[2] -> Kids[2] -> Married[2] -> Mentor[3] -> Prestige[2]  
+#> 'log Lik.' -4119.247 (df=17)
 ```
 
 #### Combining model selections with `%>%`
@@ -143,11 +195,11 @@ easily various model selection algorithms and to specify models easily.
 
 ``` r
 library(magrittr)
-model <- PhDArticles %>% full(lambda = 1) %>% naive.sevt %>% 
-               hc.sevt
+model <- PhDArticles %>% full(lambda = 1) %>% 
+           stages_hclust %>% stages_hc
 
 ## extract a sub_tree and join two stages
-sub_model <- model %>% subtree.sevt(path = c(">2"))  %>%  
+sub_model <- model %>% subtree(path = c(">2"))  %>%  
               join_stages("Mentor", "1", "2")
 ```
 
@@ -155,14 +207,14 @@ sub_model <- model %>% subtree.sevt(path = c(">2"))  %>%
 
 ##### Marginal probabilities
 
-Obtain marginal probabilities with the `prob.sevt` function.
+Obtain marginal probabilities with the `prob` function.
 
 ``` r
 # estimated probability of c(Gender = "male", Married = "yes")
 # using different models
-prob.sevt(mod_indep, c(Gender = "male", Married = "yes")) 
+prob(mod_indep, c(Gender = "male", Married = "yes")) 
 #> [1] 0.3573183
-prob.sevt(mod3, c(Gender = "male", Married = "yes"))
+prob(mod3, c(Gender = "male", Married = "yes"))
 #> [1] 0.3934668
 ```
 
@@ -170,7 +222,7 @@ Or for a `data.frame` of observations:
 
 ``` r
 obs <- expand.grid(mod_full$tree[c(2,3,5)])
-p <- prob.sevt(mod2, obs)
+p <- prob(mod2, obs)
 cbind(obs, P = p)
 #>    Gender Kids Mentor          P
 #> 1    male  yes    low 0.07208877
@@ -222,13 +274,13 @@ predict(mod3, newdata = PhDArticles[1:5,], prob = TRUE)
 ##### Sampling
 
 ``` r
-sample.sevt(mod4, 5)
+sample_from(mod4, 5)
 #>   Articles Gender Kids Married Mentor Prestige
-#> 1        0   male   no      no medium      low
-#> 2        0 female   no      no    low     high
-#> 3       >2 female   no     yes   high     high
-#> 4      1-2   male  yes     yes    low     high
-#> 5        0   male  yes     yes    low     high
+#> 1      1-2 female   no      no    low      low
+#> 2      1-2 female   no      no medium      low
+#> 3        0   male  yes     yes    low     high
+#> 4       >2   male   no     yes    low      low
+#> 5       >2 female   no      no   high     high
 ```
 
 #### Explore the model
@@ -236,42 +288,18 @@ sample.sevt(mod4, 5)
 ##### Model info
 
 ``` r
-# Degrees of freedom
-df.sevt(mod_full)
-#> [1] 143
-df.sevt(mod_indep)
-#> [1] 8
-
 # variables 
-varnames.sevt(mod1)
+variable.names(mod1)
 #> [1] "Articles" "Gender"   "Kids"     "Married"  "Mentor"   "Prestige"
 
-# number of variables
-nvar.sevt(mod1)
-#> [1] 6
-```
-
-##### Plot
-
-``` r
-plot(mod4, main = "Staged tree learned with bj.sevt", 
-     cex.label.edges = 0.6, cex.nodes = 1.5)
-text(mod4, y = -0.03, cex = 0.7)
-```
-
-![](man/figures/README-unnamed-chunk-16-1.png)<!-- -->
-
-##### Stages
-
-``` r
-stages.sevt(mod4, "Kids")
+# stages
+stages(mod1, "Kids")
 #> [1] "1" "2" "1" "2" "1" "2"
-```
 
-``` r
-summary(mod4)
+# summary
+summary(mod1)
 #> Call: 
-#> bj.sevt(mod_full)
+#> stages_hc(mod_indep)
 #> lambda:  1 
 #> Stages: 
 #>   Variable:  Articles 
@@ -280,7 +308,8 @@ summary(mod4)
 #>   ------------ 
 #>   Variable:  Gender 
 #>  stage npaths sample.size      male    female
-#>      1      3         915 0.5398037 0.4601963
+#>      1      2         699 0.5121255 0.4878745
+#>      2      1         216 0.6284404 0.3715596
 #>   ------------ 
 #>   Variable:  Kids 
 #>  stage npaths sample.size       yes        no
@@ -289,26 +318,54 @@ summary(mod4)
 #>   ------------ 
 #>   Variable:  Married 
 #>  stage npaths sample.size          no       yes
-#>      1      5         303 0.003278689 0.9967213
-#>      2      6         599 0.515806988 0.4841930
-#>     11      1          13 0.066666667 0.9333333
+#>      2      6         316 0.003144654 0.9968553
+#>      1      6         599 0.515806988 0.4841930
 #>   ------------ 
 #>   Variable:  Mentor 
-#>  stage npaths sample.size       low    medium       high
-#>      1     13         431 0.2557604 0.4377880 0.30645161
-#>      2      4         242 0.4367347 0.3346939 0.22857143
-#>      3      3         102 0.5142857 0.4000000 0.08571429
-#>     18      3         127 0.1307692 0.3384615 0.53076923
-#>     22      1          13 0.4375000 0.1875000 0.37500000
+#>  stage npaths sample.size       low    medium      high
+#>      1     17         625 0.3917197 0.3773885 0.2308917
+#>      2      7         290 0.1604096 0.4129693 0.4266212
 #>   ------------ 
 #>   Variable:  Prestige 
 #>  stage npaths sample.size       low      high
-#>      1     36         338 0.5323529 0.4676471
-#>      4     14         274 0.6920290 0.3079710
-#>      6     15         194 0.3622449 0.6377551
-#>      8      7         109 0.1801802 0.8198198
+#>      1     48         540 0.6236162 0.3763838
+#>      2     24         375 0.3262599 0.6737401
 #>   ------------
 ```
+
+##### Plot
+
+``` r
+plot(mod4, main = "Staged tree learned with bj.sevt", 
+     cex_label_edges = 0.6, cex_nodes = 1.5)
+```
+
+![](man/figures/README-unnamed-chunk-17-1.png)<!-- -->
+
+By default stages associated with the unobserved situations are not
+plotted, if the model has been created with `join_unobserved = TRUE`.
+
+``` r
+plot(stndnaming(mod5, uniq = TRUE), 
+     main = "Staged tree learned with stages_hclust 
+     (structural zeroes)", 
+     col = "stages",
+     cex_label_edges = 0.6, cex_nodes = 1.5)
+```
+
+![](man/figures/README-unnamed-chunk-18-1.png)<!-- -->
+
+###### Barplot
+
+`barplot_stages` permit to easily plot barplots (via `barplot`)
+representing the different probabilities defined for the different
+stages of a variable.
+
+``` r
+barplot(mod4, "Kids", legend.text = TRUE)
+```
+
+![](man/figures/README-unnamed-chunk-19-1.png)<!-- -->
 
 ##### Subtrees
 
@@ -316,40 +373,36 @@ A subtree can be extracted, the result is another staged event tree
 object in the remaining variables.
 
 ``` r
-sub <- subtree.sevt(mod4, c(">2", "female"))
+sub <- subtree(mod4, c(">2", "female"))
 plot(sub)
-text(sub, y = -0.03, cex = 0.7)
 ```
 
-![](man/figures/README-unnamed-chunk-19-1.png)<!-- -->
+![](man/figures/README-unnamed-chunk-20-1.png)<!-- -->
 
 #### Comparing models
 
 Check if models are equal.
 
 ``` r
-compare.sevt(mod1, mod2)
+compare_stages(mod1, mod2)
 #> [1] FALSE
 
-compare.sevt(mod1, mod2, method = "hamming", plot = TRUE, 
-             cex.label.nodes = 0, cex.label.edges = 0)
-#> [1] FALSE
-text(mod1)
+compare_stages(mod1, mod2, method = "hamming", plot = TRUE, 
+             cex_label_nodes = 0, cex_label_edges = 0)
 ```
 
-![](man/figures/README-unnamed-chunk-20-1.png)<!-- -->
+![](man/figures/README-unnamed-chunk-21-1.png)<!-- -->
 
-``` r
-
-hamming.sevt(mod1, mod2)
-#> [1] 43
-
-difftree <- compare.sevt(mod1, mod2, method = "stages", plot = FALSE, 
-             return.tree = TRUE)
-
-difftree$Married
-#>  [1] 0 1 0 1 0 1 0 1 0 1 0 1
-```
+    #> [1] FALSE
+    
+    hamming_stages(mod1, mod2)
+    #> [1] 43
+    
+    difftree <- compare_stages(mod1, mod2, method = "stages", plot = FALSE, 
+                 return_tree = TRUE)
+    
+    difftree$Married
+    #>  [1] 0 1 0 1 0 1 0 1 0 1 0 1
 
 Penalized log-likelihood.
 
@@ -362,5 +415,5 @@ BIC(mod_indep, mod_full, mod1, mod2, mod3, mod4, mod5)
 #> mod2       19 8302.067
 #> mod3       14 8388.749
 #> mod4       22 8331.596
-#> mod5       14 8332.338
+#> mod5       17 8360.471
 ```

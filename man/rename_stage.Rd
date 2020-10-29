@@ -2,25 +2,28 @@
 % Please edit documentation in R/1b-base-model-function.R
 \name{rename_stage}
 \alias{rename_stage}
-\title{rename stage(s) in staged even tree}
+\title{Rename stage(s) in staged event tree}
 \usage{
-rename_stage(object, var, stage, new.label)
+rename_stage(object, var, stage, new)
 }
 \arguments{
-\item{object}{staged event tree}
+\item{object}{an object of class \code{sevt}.}
 
-\item{var}{string, one of the variable in
-the staged tree}
+\item{var}{name of a variable in \code{object}.}
 
-\item{stage}{string or vector, the name
-of the stage(s) to be renamed}
+\item{stage}{name of the stage to be renamed.}
 
-\item{new.label}{new name for the stage(s)}
+\item{new}{new name for the stage.}
 }
 \value{
 a staged event tree object where stages \code{stage}
-have been renamed to \code{new.label}
+have been renamed to \code{new}.
 }
 \description{
-rename stage(s) in staged even tree
+Change the name of a stage in a staged event tree.
+}
+\details{
+No internal checks are performed and as side effect
+stages can be joined, if e.g. \code{new} is equal to the name
+of a stage for variable \code{var}.
 }
