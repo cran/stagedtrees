@@ -1,3 +1,7 @@
+# 2.0.1
+
+fix color assignment consistency between `plot.sevt` and `barplot.sevt`
+
 # 2.0.0
 
 This version introduces major changes, in functions capabilities
