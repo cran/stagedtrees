@@ -1,7 +1,7 @@
 Package: stagedtrees
 Type: Package
 Title: Staged Event Trees
-Version: 2.0.1
+Version: 2.1.0
 Authors@R: c(
   person(given = "Gherardo", family = "Varando", role = c("aut", "cre"),
   email = "gherardo.varando@gmail.com", 
@@ -37,11 +37,11 @@ BugReports: https://github.com/gherardovarando/stagedtrees/issues
 Imports: stats, graphics
 Suggests: testthat, bnlearn, covr, clue
 NeedsCompilation: no
-Packaged: 2020-12-08 10:05:24 UTC; gherardo
+Packaged: 2021-04-22 14:07:53 UTC; gherardo
 Author: Gherardo Varando [aut, cre] (<https://orcid.org/0000-0002-6708-1103>),
   Federico Carli [aut],
   Manuele Leonelli [aut] (<https://orcid.org/0000-0002-2562-5192>),
   Eva Riccomagno [aut]
 Maintainer: Gherardo Varando <gherardo.varando@gmail.com>
 Repository: CRAN
-Date/Publication: 2020-12-08 10:20:02 UTC
+Date/Publication: 2021-04-22 14:50:06 UTC

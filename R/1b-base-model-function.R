@@ -1,101 +1,3 @@
-#' Coerce to sevt
-#' 
-#' Convert to an equivalent object of class \code{\link{sevt}}.
-#' 
-#' @param x   an R object.
-#' @param ... additional parmaeters to be used by specific methods.
-#' @return the equivalent object of class \code{\link{sevt}}.
-#' @export
-as_sevt <- function(x, order = NULL, ...){
-  UseMethod("as_sevt", x)
-} 
-
-#' @rdname as_sevt
-#' @param order order of the variables.
-#' @details In \code{as_sevt.bn.fit} the \code{order} 
-#' argument, if provided, must be a topological order of the 
-#' \code{bn.fit} object (no check is performed). If the order is not provided 
-#' a topological order will be used (the one returned by 
-#' \code{bnlearn::node.ordering}).
-#' @details A method for objects of class \code{bn.fit} 
-#'          (\code{bnlearn} package).
-#' @export
-as_sevt.bn.fit <- function(x, order = NULL, ...) {
-  bn <- bnlearn::bn.net(x)
-  # build the ordered list of levels
-  tree <- lapply(
-    x,
-    function(tt) {
-      if (length(tt$parents) == 0) {
-        names(tt$prob)
-      } else {
-        rownames(tt$prob)
-      }
-    }
-  )
-  # if no order is provided from the user
-  # then a topological order is used
-  if (is.null(order)){
-    order <- bnlearn::node.ordering(bn)
-  }
-  # order the list of levels
-  tree <- tree[order]
-  # create staged tree from list
-  object <- sevt(tree)
-  # extract parents
-  parents <- lapply(bn$nodes[order], function(n) {
-    if (identical(n$parents, character(0))) {
-      return(NULL)
-    } else {
-      return(n$parents)
-    }
-  })
-  # build stages info respecting conditional 
-  # independences depicted in the bayesian network
-  for (i in 2:length(order)) {
-    if (i <= 2) {
-      if (order[i - 1] %in% parents[[i]]) {
-        object$stages[[i - 1]] <- seq_along(tree[[i - 1]])
-      }
-    } else {
-      grid <- expand.grid(tree[(i - 1):1])[, (i - 1):1]
-      grid$stages <- 1:nrow(grid)
-      if (length(parents[[i]]) > 0) {
-        ind <- match(parents[[i]], colnames(grid))
-        grid <- data.frame(grid[, c(ind, ncol(grid))])
-        colnames(grid) <- c(parents[[i]], "stages")
-        for (j in 1:(nrow(grid) - 1))
-        {
-          for (k in (j + 1):(nrow(grid)))
-          {
-            if (sum(grid[j, -ncol(grid)] == grid[k, -ncol(grid)]) ==
-              length(grid[j, -ncol(grid)])) {
-              grid$stages[k] <- grid$stages[j]
-            }
-          }
-        }
-        values <- unique(grid$stages)
-        unique_values <- seq_along(values)
-        for (l in seq_along(values))
-        {
-          for (m in seq_along(grid$stages))
-          {
-            if (grid$stages[m] == values[l]) {
-              grid$stages[m] <- unique_values[l]
-            }
-          }
-        }
-      } else if (length(parents[[i]]) == 0) {
-        grid$stages <- rep(1, nrow(grid))
-      }
-      object$stages[[i - 1]] <- grid$stages
-    }
-  }
-  object$stages <- lapply(object$stages, as.character)
-  return(object)
-}
-
-
 #' Fit a staged event tree
 #'
 #' Estimate transition probabilities in a staged event tree from data.
@@ -150,6 +52,7 @@ sevt_fit <- function(object,
   pp <- pp / sum(pp)
   attr(pp, "n") <- n
   object$prob[[order[1]]] <- list("1" = pp)
+  if (length(object$tree)>1){
   for (i in 2:length(order)) {
     stages <- unique(object$stages[[order[i]]])
     object$prob[[order[i]]] <-
@@ -171,6 +74,7 @@ sevt_fit <- function(object,
         return(tt) # return normalized prob
       })
     names(object$prob[[order[i]]]) <- stages
+  }
   }
   object$ll <- NULL ## force recompute log-likelihood
   object$ll <- logLik(object)
@@ -501,9 +405,10 @@ summary.sevt <- function(object, ...) {
     D$npaths <- vapply(D$stage, function(s) {
       sum(object$stages[[v]] == s)
     }, FUN.VALUE = 1)
-    if (is_fitted_sevt(object)) {
+    if (has_prob(object)) {
       D[["sample.size"]] <- vapply(D$stage, function(s) {
-        attr(object$prob[[v]][[s]], "n")
+        ifelse(is.null(attr(object$prob[[v]][[s]], "n")), 
+               NA, attr(object$prob[[v]][[s]], "n")) 
       }, FUN.VALUE = 1)
       if (nrow(D) <= 1){
         D <- cbind(D, t(as.data.frame(object$prob[[v]])))
@@ -777,7 +682,7 @@ compare_stages <-
 #' \code{hamming_stages} finds a minimal set of nodes for which the associated stages
 #' should be changed to obtain equivalent structures. To do that, a maximum-weight bipartite 
 #' matching problem between the stages of the two staged trees is solved using the 
-#' Hungarian method implemented in the \code{solve_LSAP} function of the \code{clue}
+#' Hungarian method implemented in the \code{solve_LSAP} function of the \pkg{clue}
 #' package. 
 #' \code{hamming_stages} requires the package \code{clue}.
 #' @return \code{hamming_stages}: if \code{return_tree = FALSE}, integer, the minimum

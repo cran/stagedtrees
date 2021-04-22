@@ -1,3 +1,16 @@
+# 2.1.0 
+
+* implemented various conversion algorithms between `sevt` 
+  and DAG representations.
+* improve implementation of `as_sevt.bn.fit`.
+* use \pkg instead of \code for package names in documentation.
+* fix `find_stage`.
+* fix problems with single-variable staged trees.
+* fix `summary.sevt` for objects without `ctables`. 
+* fix bug in `path_probability` and `prob` for sevt objects with not 
+  ordered `$prob`.
+* more tests.
+
 # 2.0.1
 
 fix color assignment consistency between `plot.sevt` and `barplot.sevt`
