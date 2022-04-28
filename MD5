@@ -1,4 +1,4 @@
-a0bccda924a6e5d48032f08354ce19c7 *DESCRIPTION
+3918234ba6e31f579ca22366bf95e764 *DESCRIPTION
 fa6ba0d01b536dff93dc916a736ef596 *LICENSE
 743b3c34e071b88bab45ab95b28cb96b *NAMESPACE
 e8f982138e227317b1cd53f7dbf6ac67 *NEWS.md
@@ -15,11 +15,12 @@ ba556b9e4c9349e3a953814a30e8685f *R/7-ceg-functions.R
 2082109cd65be11b34e4c19d990793ff *R/8-conversion-functions.R
 6db905650f98f20dc7449864260d703a *R/9-search-order.R
 ca7e8450f38c92aa03027921004bb0fc *R/data-doc.R
-4f2a81d6637756769039daa28dd89439 *R/stagedtrees.R
-989fb10ece36581b8a9bc5900e5fd3ed *README.md
+b9650230a01cb46e3038fbfb15d24e07 *R/stagedtrees.R
+66a58fe6c8778e73ba305ca289e9cfac *README.md
 a179349640bea6a73af4c66b9821d1e5 *data/Asym.RData
 de5217822a1c88c43c751b92d204ff85 *data/PhDArticles.RData
 98aae2eab3a5e1c8285fd85db0993167 *data/Pokemon.RData
+97804cd58cd0ea63b322e9a926721c45 *inst/CITATION
 a52244a79a2d76aecbec6c20e3d0796f *man/Asym.Rd
 45111205784bc09150087f882af72bbd *man/PhDArticles.Rd
 523ff888d88eea55d3ababf91361a53b *man/Pokemon.Rd
@@ -86,7 +87,7 @@ b74e4998694650b3f972319576ebbbb0 *man/sevt_fit.Rd
 1c9ee3a0e639ad913e1acdabdfd2c87e *man/sevt_varnames.Rd
 ab0591dfd0d232ec5543dfb0fe1e3dbf *man/simple_clustering.Rd
 88a336f7e3bdf738a2572da6eef24a7d *man/split_stage_random.Rd
-1b28c4392085f75dd86a44c6032f2b17 *man/stagedtrees.Rd
+cc84071577d42e7067cb080113bccb55 *man/stagedtrees.Rd
 7ad81a3552e4be5b4d60f41f11edd304 *man/stages.Rd
 81171847b89f7cc71017aa8f38aeb035 *man/stages_bhc.Rd
 ffee2257f7a0e9cd633c825c92dc0f64 *man/stages_bhcr.Rd
