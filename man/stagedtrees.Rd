@@ -2,6 +2,7 @@
 % Please edit documentation in R/stagedtrees.R
 \docType{package}
 \name{stagedtrees}
+\alias{stagedtrees-package}
 \alias{stagedtrees}
 \title{Staged event trees.}
 \description{
@@ -27,6 +28,7 @@ Model selection algorithms:
 \item Fast Backward Hill-Climbing \code{\link{stages_fbhc}}
 \item Backward Hill-Climbing Random \code{\link{stages_bhcr}}
 \item Backward joining \code{\link{stages_bj}}
+\item Simple Backward Hill-Climbing \code{\link{stages_simplebhc}}
 \item Hierarchical Clustering \code{\link{stages_hclust}}
 \item K-Means Clustering \code{\link{stages_kmeans}}
 \item Optimal order search \code{\link{search_best}}
@@ -57,6 +59,7 @@ Modify models:
 \itemize{
 \item Join and isolate unobserved situations \code{\link{join_unobserved}}
 \item Join two stages \code{\link{join_stages}}
+\item Join two positions \code{\link{join_positions}}
 \item Rename a stage \code{\link{rename_stage}}
 }
 }
@@ -85,4 +88,23 @@ Conditional independence and chain event graphs.
 Thwaites P. A., Smith, J. Q.
 A new method for tackling asymmetric decision problems.
 \emph{International Journal of Approximate Reasoning}, vol. 88, pp. 624–639, 2017.
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/stagedtrees/stagedtrees}
+  \item Report bugs at \url{https://github.com/stagedtrees/stagedtrees/issues}
+}
+
+}
+\author{
+\strong{Maintainer}: Gherardo Varando \email{gherardo.varando@gmail.com} (\href{https://orcid.org/0000-0002-6708-1103}{ORCID})
+
+Authors:
+\itemize{
+  \item Federico Carli
+  \item Manuele Leonelli (\href{https://orcid.org/0000-0002-2562-5192}{ORCID})
+  \item Eva Riccomagno
+}
+
 }

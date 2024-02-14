@@ -21,6 +21,7 @@
 #' * Fast Backward Hill-Climbing \code{\link{stages_fbhc}}
 #' * Backward Hill-Climbing Random \code{\link{stages_bhcr}}
 #' * Backward joining \code{\link{stages_bj}}
+#' * Simple Backward Hill-Climbing \code{\link{stages_simplebhc}}
 #' * Hierarchical Clustering \code{\link{stages_hclust}}
 #' * K-Means Clustering \code{\link{stages_kmeans}}
 #' * Optimal order search \code{\link{search_best}}
@@ -45,8 +46,9 @@
 #' Modify models:
 #'  * Join and isolate unobserved situations \code{\link{join_unobserved}}
 #'  * Join two stages \code{\link{join_stages}}
+#'  * Join two positions \code{\link{join_positions}}
 #'  * Rename a stage \code{\link{rename_stage}}
-#' @docType package
+#'
 #' @name stagedtrees
 #' @references
 #' Collazo R. A., Görgen C. and Smith J. Q.
@@ -72,4 +74,4 @@
 #' mf <- full(PhDArticles, join_unobserved = TRUE)
 #' mod <- stages_fbhc(mf)
 #' plot(mod)
-NULL
+"_PACKAGE"
